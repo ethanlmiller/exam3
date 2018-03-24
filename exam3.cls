@@ -34,6 +34,7 @@
 \RequirePackage{xkeyval}
 \RequirePackage{xstring}
 \RequirePackage{etex}
+\RequirePackage{tabularx}
 
 \newboolean{exam@solutions}
 \setboolean{exam@solutions}{false}
@@ -126,6 +127,10 @@
 \newcommand{\examtotalpages}{\pageref{LastPage}}
 \newcommand{\examsection}[1]{\centerline{\fbox{\Large\textbf{#1}}} \vspace{0.15in}}
 
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
 \renewcommand{\ps@headings}{
   \renewcommand{\@oddhead}{
     \ifthenelse{\boolean{exam@nameheading}}{
@@ -144,9 +149,9 @@
   }
   \renewcommand{\@evenhead}{\@oddhead}
   \renewcommand{\@oddfoot}{
-    \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}c@{\extracolsep{\fill}}r} \hline \hline
+    \begin{tabular*}{\textwidth}{L{2.5in}C{1.5in}R{2.5in}} \hline
     {\small \@title}  & {\Large \exam@pagename~\textbf{\thepage}~of~\textbf{\examtotalpages}} & {\small \@date} \\
-    {\footnotesize \exam@copyright} & &
+     & & {\footnotesize \exam@copyright}
     \end{tabular*}
   }
   \renewcommand{\@evenfoot}{\@oddfoot}
@@ -165,15 +170,12 @@
 \newcommand{\exam@amark}{\ifthenelse{\boolean{exam@solutions}}{\makebox[0pt][l]{\hspace*{2pt}\textbf{\ifthenelse{\boolean{exam@choiceboxes}}{$\textsf{x}$}{$\Longrightarrow$}}}}{}}
 \newcommand{\exam@cbox}{\makebox[\exam@cboxwidth][l]{\ifthenelse{\boolean{exam@choiceboxes}}{$\bigcirc$~}{}}}
 
-\newcommand{\correct}{\addtocounter{mchoice}{1}\item[\exam@amark\exam@cbox\Alph{mchoice}.\hfill]}
+\newcommand{\itemyes}{\addtocounter{mchoice}{1}\item[\exam@amark\exam@cbox\Alph{mchoice}.\hfill]}
 
-
-\newcommand{\xtem}{\correct}
-%\newcommand{\choice}{\item}
-
+% Default order needs to use abcde for Version A, since that's the default version
+\newcommand{\exam@defaultorder}{abcde/bcaed/caedb/edbca}
 \newcommand{\exam@optorder}{}
 \newcommand{\exam@myoptorder}{}
-\newcommand{\exam@defaultorder}{abcde/bcaed/caedb/edbca}
 \define@choicekey[exam]{multichoice}{seq}{1,2,3,4,5}[1]{\exam@setoptorder{#1}{E}}
 \define@choicekey[exam]{multichoice}{seqC}{1,2,3,4,5}[1]{\exam@setoptorder{#1}{C}}
 \define@choicekey[exam]{multichoice}{seqD}{1,2,3,4,5}[1]{\typeout{seqD #1}\exam@setoptorder{#1}{D}}
@@ -214,11 +216,12 @@
 \newcommand{\exam@qorder}{}
 \newcommand{\exam@mc}{}
 \newcounter{exam@i}
+\newcounter{mchoice}
 
 \newlength{\exam@optwidth}
 \newlength{\exam@optcwidth}
 \newlength{\exam@sepwidth}
-\settowidth{\exam@sepwidth}{00.N}
+\settowidth{\exam@sepwidth}{MN.}
 \newcounter{mchoicebox}
 \newenvironment{multichoice}[1][noop]{%
   \setkeys[exam]{multichoice}{#1}%
@@ -237,34 +240,27 @@
   \StrBetween[\exam@versionasnum,\numexpr\exam@versionasnum+1]{/\exam@optorder/}{/}{/}[\exam@myoptorder]%
   \typeout{Question \theproblemnum: \exam@myoptorder}%
   \StrLen{\exam@myoptorder}[\exam@orderlen]%
-  \begin{mchoice}%
+  \begin{list}%
+    {\exam@cbox\Alph{mchoice}.\hfill}%
+    {\usecounter{mchoice}%
+      \setlength{\topsep}{0ex}%
+      \setlength{\parskip}{0ex}%
+      \setlength{\leftmargin}{\exam@optcwidth}%
+      \settowidth{\labelwidth}{{\exam@cbox}M.}%
+      \settowidth{\labelsep}{N}%
+      \setlength{\parsep}{0ex}%
+      \setlength{\itemsep}{0pt}%
+    }%
     \forloop{exam@i}{1}{\value{exam@i} < \numexpr\exam@orderlen+1} {%
       \StrChar{\exam@myoptorder}{\value{exam@i}}[\exam@curopt]%
       \ifcsstring{mcy\exam@curopt}{blank}{}{%
-        \ifcsstring{mcy\exam@curopt}{yes}{\xtem}{\item} \usebox{\csuse{mc\exam@curopt}}%
+        \ifcsstring{mcy\exam@curopt}{yes}{\itemyes}{\item} \usebox{\csuse{mc\exam@curopt}}%
         \csedef{mcy\exam@curopt}{blank}%
       }%
     }%
-  \end{mchoice}%
+  \end{list}
   % Reset order to blank
   \renewcommand{\exam@optorder}{}%
-}
-
-\newcounter{mchoice}
-\newenvironment{mchoice}{
-  \begin{list}
-    {\exam@cbox\Alph{mchoice}.\hfill}
-    {\usecounter{mchoice}
-      \setlength{\topsep}{0ex}
-      \setlength{\parskip}{0ex}
-      \ifthenelse{\boolean{exam@choiceboxes}}{\setlength{\leftmargin}{0.6in}}{\setlength{\leftmargin}{0.3in}}
-      \settowidth{\labelwidth}{{\exam@cbox}M.}
-      \settowidth{\labelsep}{N}
-      \setlength{\parsep}{0ex}
-      \setlength{\itemsep}{0pt}
-    }
-}{
-  \end{list}
 }
 
 \newcommand{\pointboxes}{\setboolean{exam@pointboxes}{true}}
