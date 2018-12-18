@@ -1,23 +1,7 @@
 % exam3.cls
 %
-% Based on testpoints.tex
 %
-% $Log: exam.cls,v $
-% Revision 1.4  2006/09/07 07:15:45  elm
 %
-% Now using mathptmx instead of mathptm.
-%
-% Revision 1.3  2005/12/20 18:15:54  elm
-% *** empty log message ***
-%
-% Revision 1.2  2005/03/02 22:53:27  elm
-% More cleanup for exam.cls.
-%
-% Revision 1.1  2003/07/30 21:45:02  elm
-% Class for writing exams.
-%
-%------------------------------------------------------------------
-% PROBLEM, PART, AND POINT COUNTING...
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{exam3}
