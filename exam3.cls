@@ -23,18 +23,21 @@
 \ProvidesClass{exam3}
 
 \RequirePackage{times,mathptmx,latexsym,fullpage}
-\RequirePackage{ifthen,graphicx,xspace,framed}
+\RequirePackage{ifthen,graphicx,xspace}
+\RequirePackage[framemethod=tikz]{mdframed}
 \RequirePackage{verbatim}
 \RequirePackage{pagecounting}
 \RequirePackage{lastpage}
 \RequirePackage[absolute]{textpos}
-\RequirePackage{etoolbox}
 \RequirePackage{forarray}
 \RequirePackage{forloop}
 \RequirePackage{xkeyval}
 \RequirePackage{xstring}
 \RequirePackage{etex}
-\RequirePackage{tabularx}
+\RequirePackage{setspace}
+\RequirePackage{fancyhdr}
+\RequirePackage{environ,xparse,etoolbox}
+
 
 \newboolean{exam@solutions}
 \setboolean{exam@solutions}{false}
@@ -77,8 +80,10 @@
 
 \newlength{\exam@answerwidth}
 \setlength{\exam@answerwidth}{6.5in}
+\newlength{\exam@mcspacing}
+\setlength{\exam@mcspacing}{4pt}
 \newlength{\exam@problemwidth}
-\newcommand{\problemwidth}[1]{\setlength{\exam@problemwidth}{#1}\addtolength{\exam@problemwidth}{-10pt}}
+\newcommand{\problemwidth}[1]{\setlength{\exam@problemwidth}{#1}\addtolength{\exam@problemwidth}{-8pt}}
 \problemwidth{\textwidth}
 
 % Settings for the textpos module
@@ -110,12 +115,8 @@
 \newcommand{\exam@pagename}{Page}
 \newcommand{\exam@account}{\textbf{Account:}}
 \newcommand{\exam@copyright}{}
-\newcommand{\exam@examversion}{}
-\newcommand{\setexamversion}[1]{%
-  \renewcommand{\exam@examversion}{#1}
-  \StrPosition{ABCD}{#1}[\exam@versionasnum]
-}
-\setexamversion{A}
+\newcommand{\exam@examversion}{1}
+\newcommand{\setexamversion}[1]{\renewcommand{\exam@examversion}{#1}}
 \newcommand{\examversion}{\exam@examversion}
 \newcommand{\copyrightname}[1]{\renewcommand{\exam@copyright}{\copyright~Copyright \the\year~#1}}
 \newcommand{\nocopyrightname}{\renewcommand{\exam@copyright}{}}
@@ -126,142 +127,121 @@
 \newcommand{\examaccount}[1]{\renewcommand{\exam@account}{#1}}
 \newcommand{\examtotalpages}{\pageref{LastPage}}
 \newcommand{\examsection}[1]{\centerline{\fbox{\Large\textbf{#1}}} \vspace{0.15in}}
+\newcommand{\examshowanswers}{\exam@mcanswers}
+\def\exam@mcanswers{}
 
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
-
-\renewcommand{\ps@headings}{
-  \renewcommand{\@oddhead}{
-    \ifthenelse{\boolean{exam@nameheading}}{
-      \parbox[t]{2.8in}{{\fontsize{14}{16pt}\selectfont \textbf{Name:}}
-        \underline{
-          \makebox[2.3in]{
-            \ifthenelse{\boolean{exam@solutions}}{\textbf{\exam@instrname}}{}}}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[C]{
+  \ifthenelse{\boolean{exam@nameheading}}{
+    \parbox[t]{3.3in}{{\fontsize{14}{16pt}\selectfont \textbf{Name:}}
+      \underline{
+        \makebox[2.3in]{
+          \ifthenelse{\boolean{exam@solutions}}{\textbf{\exam@instrname}}{}}}
+    }
+    \parbox[t]{3.5in}{{\fontsize{14}{16pt}\selectfont \exam@account}
+      \underline{
+        \makebox[1.4in]{
+          \ifthenelse{\boolean{exam@solutions}}{\textbf{\exam@instremail}}{}}
       }
-      \parbox[t]{3.5in}{{\fontsize{14}{16pt}\selectfont \exam@account}
-        \underline{
-          \makebox[1.4in]{
-            \ifthenelse{\boolean{exam@solutions}}{\textbf{\exam@instremail}}{}}
-        } {\fontsize{14}{16pt}\selectfont @\exam@emaildomain}
-      }
-    }{}
+      {\fontsize{14}{16pt}\selectfont @\exam@emaildomain}
+    }
   }
-  \renewcommand{\@evenhead}{\@oddhead}
-  \renewcommand{\@oddfoot}{
-    \begin{tabular*}{\textwidth}{L{2.5in}C{1.5in}R{2.5in}} \hline
-    {\small \@title}  & {\Large \exam@pagename~\textbf{\thepage}~of~\textbf{\examtotalpages}} & {\small \@date} \\
-     & & {\footnotesize \exam@copyright}
-    \end{tabular*}
-  }
-  \renewcommand{\@evenfoot}{\@oddfoot}
+}
+\fancyfoot[L]{
+  \begin{minipage}[t]{3.0in}
+    \small \@title \\
+    \footnotesize \exam@copyright
+  \end{minipage}
+}
+\fancyfoot[C]{
+  \Large \exam@pagename~\textbf{\thepage}~of~\textbf{\examtotalpages}
+}
+\fancyfoot[R]{
+  \small \@date
 }
 
-\pagestyle{headings}
+\pagestyle{fancy}
 
+%=====================================================
+% Code for reordering multiple choice problem answers
+%=====================================================
 
-%==================================================================
-%
-% Helpers for multiple choice problems
-%
-%==================================================================
 \newlength{\exam@cboxwidth}
 \settowidth{\exam@cboxwidth}{$\bigcirc$~~~}
 \newcommand{\exam@amark}{\ifthenelse{\boolean{exam@solutions}}{\makebox[0pt][l]{\hspace*{2pt}\textbf{\ifthenelse{\boolean{exam@choiceboxes}}{$\textsf{x}$}{$\Longrightarrow$}}}}{}}
 \newcommand{\exam@cbox}{\makebox[\exam@cboxwidth][l]{\ifthenelse{\boolean{exam@choiceboxes}}{$\bigcirc$~}{}}}
 
-\newcommand{\itemyes}{\addtocounter{mchoice}{1}\item[\exam@amark\exam@cbox\Alph{mchoice}.\hfill]}
-
-% Default order needs to use abcde for Version A, since that's the default version
-\newcommand{\exam@defaultorder}{abcde/bcaed/caedb/edbca}
-\newcommand{\exam@optorder}{}
-\newcommand{\exam@myoptorder}{}
-\define@choicekey[exam]{multichoice}{seq}{1,2,3,4,5}[1]{\exam@setoptorder{#1}{E}}
-\define@choicekey[exam]{multichoice}{seqC}{1,2,3,4,5}[1]{\exam@setoptorder{#1}{C}}
-\define@choicekey[exam]{multichoice}{seqD}{1,2,3,4,5}[1]{\typeout{seqD #1}\exam@setoptorder{#1}{D}}
-\define@choicekey[exam]{multichoice}{seqE}{1,2,3,4,5}[1]{\exam@setoptorder{#1}{E}}
-\define@key[exam]{multichoice}{order}[\exam@defaultorder]{\csdef{exam@optorder}{#1}}
-\define@cmdkey[exam]{multichoice}{noop}[noop]{}
-
-\newcommand{\exam@setoptorder}[2]{
-  \StrBetween[1,2]{C1bcade/cabde/abcde/cbade122334455CD1bdace/cbdae/dcabe/abcde122334455DE1abcde/bcaed/caedb/edbca122334455E}{#2}{#2}[\exam@tmp]
-  \StrBetween[1,2]{\exam@tmp}{#1}{#1}[\exam@optorder]
+\newcounter{orderenum}\newcounter{listcount}[orderenum]%\newcounter{listtotal}[orderenum]
+\let\olditem\item% Store regular \item macro
+\NewEnviron{orderenum}[1][\relax]{%
+  \stepcounter{orderenum}% New orderenum environment (also resets listcount)
+  \def\optarg{#1}% Store optional argument
+  \expandafter\ifx\optarg\relax% A normal list
+    \begin{mchoice}\BODY\end{mchoice}% Process environment
+  \else% A reordered list
+    \g@addto@macro{\BODY}{\item\relax\item}% Used to delimit the items; last item identified by \item\relax\item
+    \def\item##1\item{% Redefine \item to capture contents
+      \def\optarg{##1}%\show\optarg%
+      \expandafter\ifx\optarg\relax\else% Last item not reached
+        \stepcounter{listcount}% Next item being processed
+        \csgdef{orderenum@\theorderenum @\thelistcount}{##1}% Store item in control sequence
+        \expandafter\item% Recursively continue processing items
+      \fi
+    }
+    \BODY% Process environment (save items)
+    \renewcommand*{\do}[1]{\olditem \csname orderenum@\theorderenum @##1\endcsname}% Print each item in order
+    \enumerate\docsvlist{#1}\endenumerate% Process items
+  \fi%
 }
 
-%==================================================================
-%
-% Multiple choice problems
-%
-%==================================================================
-
-\count@=0
-\loop\ifnum\count@<26
-  \advance\count@\@ne
-  \expandafter\newsavebox\csname mc\@alph\count@\endcsname
-\repeat
-
-\ForEach{/}{
-  \csedef{mcy\thislevelitem}{blank}
-}{a/b/c/d/e/f/g/h/i/j}
-
-\newcommand{\opt}[1][no]{
-        \end{minipage}
-        \end{lrbox}
-        \addtocounter{mchoicebox}{1}%
-        \csedef{mcy\alph{mchoicebox}}{#1}
-        \begin{lrbox}{\csuse{mc\alph{mchoicebox}}}
-        \begin{minipage}[t]{\exam@optwidth}
+\newcounter{exam@mc}
+\newcounter{exam@lc}[exam@mc]
+\def\theexam@mc{\alph{exam@mc}}
+\def\theexam@lc{\alph{exam@lc}}
+\NewEnviron{exammc}[1][\relax]{%
+  \stepcounter{exam@mc}% New orderenum environment (also resets listcount)
+  \def\optarg{#1}% Store optional argument
+  \expandafter% A reordered list
+  \g@addto@macro{\BODY}{\item\relax\item}% Used to delimit the items; last item identified by \item\relax\item
+  \def\item##1\item{% Redefine \item to capture contents
+    \def\optarg{##1}%\show\optarg%
+    \expandafter\ifx\optarg\relax\else% Last item not reached
+      \stepcounter{exam@lc}% Next item being processed
+      \csgdef{exam@\theexam@mc @\theexam@lc}{##1}% Store item in control sequence
+      \expandafter\item% Recursively continue processing items
+    \fi
+  }
+  \BODY% Process environment (save items)
+  \renewcommand*{\do}[1]{\def\exam@cur{\csname exam@\theexam@mc @##1\endcsname}\IfBeginWith{\exam@cur}{*}%
+    {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\global\csedef{exam@mcanswers}{\exam@mcanswers,\Alph{exam@muc}}}%
+    {\def\exam@curmark{}\olditem \exam@cur}%
+  }
+  \begin{exam@muc}\docsvlist{#1}\end{exam@muc}% Process items
 }
 
-\newcommand{\exam@qorder}{}
-\newcommand{\exam@mc}{}
-\newcounter{exam@i}
-\newcounter{mchoice}
-
-\newlength{\exam@optwidth}
-\newlength{\exam@optcwidth}
-\newlength{\exam@sepwidth}
-\settowidth{\exam@sepwidth}{MN.}
-\newcounter{mchoicebox}
-\newenvironment{multichoice}[1][noop]{%
-  \setkeys[exam]{multichoice}{#1}%
-  \ifcsempty{exam@optorder}{\csedef{exam@optorder}{\exam@defaultorder}}{}%
-  \setcounter{mchoicebox}{0}%
-  \setlength{\exam@optwidth}{\exam@problemwidth}%
-  \ifthenelse{\boolean{exam@choiceboxes}}{\setlength{\exam@optcwidth}{0.6in}}{\setlength{\exam@optcwidth}{0.3in}}%
-  \addtolength{\exam@optwidth}{-\exam@sepwidth}%
-  \addtolength{\exam@optwidth}{-\exam@optcwidth}%
-  \begin{lrbox}{\mcz}%
-    \begin{minipage}[t]{\exam@optwidth}%
+\newcounter{exam@muc}
+\NewDocumentEnvironment{exam@muc}{}{
+  \def\exam@curmark{}% Set solution mark to be empty.  Set to exam@amark if correct answer.
+  \begin{list}
+    {\exam@curmark\exam@cbox\Alph{exam@muc}.\hfill}
+    {%
+      \usecounter{exam@muc}
+      \setlength{\topsep}{1pt}
+      \setlength{\parskip}{0ex}
+      \ifthenelse{\boolean{exam@choiceboxes}}{\setlength{\leftmargin}{0.6in}}{\setlength{\leftmargin}{0.3in}}
+      \settowidth{\labelwidth}{{\exam@cbox}M.}
+      \settowidth{\labelsep}{N}
+      \setlength{\parsep}{0ex}
+      \setlength{\itemsep}{0pt}
+    }
 }{
-    \end{minipage}%
-  \end{lrbox}%
-  % Pick the order for the version we have
-  \StrBetween[\exam@versionasnum,\numexpr\exam@versionasnum+1]{/\exam@optorder/}{/}{/}[\exam@myoptorder]%
-  \typeout{Question \theproblemnum: \exam@myoptorder}%
-  \StrLen{\exam@myoptorder}[\exam@orderlen]%
-  \begin{list}%
-    {\exam@cbox\Alph{mchoice}.\hfill}%
-    {\usecounter{mchoice}%
-      \setlength{\topsep}{0ex}%
-      \setlength{\parskip}{0ex}%
-      \setlength{\leftmargin}{\exam@optcwidth}%
-      \settowidth{\labelwidth}{{\exam@cbox}M.}%
-      \settowidth{\labelsep}{N}%
-      \setlength{\parsep}{0ex}%
-      \setlength{\itemsep}{0pt}%
-    }%
-    \forloop{exam@i}{1}{\value{exam@i} < \numexpr\exam@orderlen+1} {%
-      \StrChar{\exam@myoptorder}{\value{exam@i}}[\exam@curopt]%
-      \ifcsstring{mcy\exam@curopt}{blank}{}{%
-        \ifcsstring{mcy\exam@curopt}{yes}{\itemyes}{\item} \usebox{\csuse{mc\exam@curopt}}%
-        \csedef{mcy\exam@curopt}{blank}%
-      }%
-    }%
   \end{list}
-  % Reset order to blank
-  \renewcommand{\exam@optorder}{}%
 }
+
+%=================================
+
+
 
 \newcommand{\pointboxes}{\setboolean{exam@pointboxes}{true}}
 \newcommand{\nopointboxes}{\setboolean{exam@pointboxes}{false}}
@@ -310,6 +290,7 @@
   \begin{lrbox}{\exam@problembox}
     \par\noindent
     \begin{minipage}[t]{\exam@problemwidth}
+      \raggedright
       \begin{list}
         {\large \theproblemnum.\hfill}  % Problem number
         {\setlength{\topsep}{0ex}
@@ -413,6 +394,7 @@
   \ifthenelse{\boolean{exam@solutions}}{\usebox{\exam@answerbox}}{}
 }
 \newcommand{\iftestonly}[1]{\ifthenelse{\boolean{exam@solutions}}{}{#1}}
+\newcommand{\ifsolutionsonly}[1]{\ifthenelse{\boolean{exam@solutions}}{#1}{}}
 
 \newsavebox{\exam@answerbox}
 \newcommand{\exam@answerheight}{0}
