@@ -183,7 +183,10 @@
 \newcounter{exam@lc}[exam@mc]
 \def\theexam@mc{\alph{exam@mc}}
 \def\theexam@lc{\alph{exam@lc}}
+\newcommand{\exam@qorder}{a,b,c,d,e}
+\define@key{exam@mckeys}{qorder}{\def\exam@qorder{#1}}
 \NewEnviron{exammc}[1][\relax]{%
+  %\setkeys{exam@mckeys}{qorder={a,b,c,d,e},#1}
   \stepcounter{exam@mc}% New orderenum environment (also resets listcount)
   \def\optarg{#1}% Store optional argument
   \expandafter% A reordered list
@@ -201,7 +204,7 @@
     {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\global\csedef{exam@mcanswers}{\exam@mcanswers,\Alph{exam@muc}}}%
     {\def\exam@curmark{}\olditem \exam@cur}%
   }
-  \begin{exam@muc}\docsvlist{#1}\end{exam@muc}% Process items
+  \begin{exam@muc}\docsvlist{\exam@qorder}\end{exam@muc}% Process items
 }
 
 \newcounter{exam@muc}

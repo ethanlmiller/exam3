@@ -1,0 +1,84 @@
+\documentclass[11pt,nochoiceboxes,solutions]{exam3}
+
+\usepackage{graphicx,xspace}
+\usepackage{xcolor,multicol,wrapfig}
+\setlength{\columnsep}{12pt}
+\setlength{\columnseprule}{1pt}
+
+\instructorname{Prof. Ethan L.~Miller}
+\instructoremail{elm}
+\emaildomain{xyz.edu}
+
+% \usepackage{draftwatermark}
+% \SetWatermarkText{For use in CMPE 110 Winter 2018 only}
+% \SetWatermarkScale{0.30}
+% \SetWatermarkAngle{60}
+
+\usepackage{watermark,transparent}
+
+\begin{comment}
+\ifsolutionsonly{\watermark{
+  \put(30,-380){\transparent{0.15}\rotatebox[origin=c]{60}{
+    \begin{minipage}{10in}
+      \centering
+      \fontsize{42}{42}\selectfont
+      \textsf{For use in CMPE 110 Winter 2018 only \\
+      Redistribution explicitly forbidden}
+    \end{minipage}
+  }}
+  \put(-25,-350){\fbox{\rotatebox[origin=c]{90}{\fontsize{12}{14}\selectfont\textsf{\textbf{For use in CMPS 110 Winter 2018 ONLY.  Any other use constitutes academic dishonesty and copyright violation.}}}}}
+  \put(510,-350){\fbox{\rotatebox[origin=c]{270}{\fontsize{12}{14}\selectfont\textsf{\textbf{For use in CMPS 110 Winter 2018 ONLY.  Any other use constitutes academic dishonesty and copyright violation.}}}}}
+}}
+\end{comment}
+
+
+\newenvironment{itemtight}{
+  \begin{list}
+    {$\bullet$}
+    {\setlength{\parsep}{0ex}\setlength{\itemsep}{0ex}
+      \setlength{\labelwidth}{0.30in}\setlength{\labelsep}{0.10in}
+      \setlength{\leftmargin}{0.30in}\setlength{\rightmargin}{0.25in}
+    }
+}{
+  \end{list}
+}
+
+%\typein[\myexam]{Exam version: }
+%\setexamversion{\myexam}
+\setexamversion{B}
+
+\copyrightname{Ethan L. Miller}
+
+\exampagename{Page}
+
+\begin{document}
+
+\title{CMPE 110 Final Exam---\fbox{\textbf{VERSION \examversion}}}
+\date{December 10, 2018}
+\maketitle
+
+\thispagestyle{fancy}
+\setlength{\partopsep}{0pt}
+
+\section*{Multiple Choice I}
+
+
+% Week 5
+\begin{problem}{2}
+  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+  \begin{exammc}
+    \item *About $10^2$ cords
+    \item About $10^3$ cords
+    \item About $10^4$ cords
+    \item About $10^5$ cords
+    \item None of the above
+  \end{exammc}
+\end{problem}
+
+
+
+\typeout{Answers: \examshowanswers}
+
+\showpoints
+
+\end{document}
