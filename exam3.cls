@@ -33,6 +33,8 @@
 \setboolean{exam@leavespace}{true}
 \newboolean{exam@nameheading}
 \setboolean{exam@nameheading}{true}
+\newboolean{exam@internaltest}
+\setboolean{exam@internaltest}{false}
 
 \DeclareOption{solutions}{\setboolean{exam@solutions}{true}}
 \DeclareOption{answerboxes}{\setboolean{exam@choiceboxes}{true}}
@@ -44,6 +46,7 @@
 \DeclareOption{noleavespace}{\setboolean{exam@leavespace}{false}}
 \DeclareOption{nameheading}{\setboolean{exam@nameheading}{true}}
 \DeclareOption{nonameheading}{\setboolean{exam@nameheading}{false}}
+\DeclareOption{internaltesting}{\setboolean{exam@internaltest}{true}}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \PassOptionsToClass{letterpaper}{article}
 \ProcessOptions
@@ -164,6 +167,7 @@
   \IfStrEq{\exam@mcanswers}{}{\global\csedef{exam@mcanswers}{#1}}{\global\csedef{exam@mcanswers}{\exam@mcanswers,#1}}%
 }
 
+\let\olditem\item
 \newcounter{exam@mc}
 \newcounter{exam@lc}[exam@mc]
 \def\theexam@mc{\alph{exam@mc}}
@@ -186,13 +190,15 @@
     \fi
   }
   \BODY% Process environment (save items)
-  \renewcommand*{\do}[1]{\def\exam@cur{\csname exam@\theexam@mc @##1\endcsname}\IfBeginWith{\exam@cur}{*}%
-    {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\exam@addanswer{\Alph{exam@muc}}}%
-    {\def\exam@curmark{}\olditem \exam@cur}%
+  \renewcommand*{\do}[1]{%
+    \ifcsundef{exam@\theexam@mc @##1}{}{%
+      \def\exam@cur{\csname exam@\theexam@mc @##1\endcsname}%
+      \IfBeginWith{\exam@cur}{*}%
+      {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\exam@addanswer{\Alph{exam@muc}}}%
+      {\def\exam@curmark{}\olditem \exam@cur}%
+    }
   }
-  \begin{exam@muc}
-    \toksloop[\do]{\qo}
-  \end{exam@muc}
+  \begin{exam@muc}\toksloop[\do]{\qo}\end{exam@muc}
 }
 
 \newcounter{exam@muc}
@@ -218,6 +224,16 @@
 \csdef{qorder@setA@2}{dabec}
 \csdef{qorder@setA@3}{cdeab}
 \csdef{qorder@setA@4}{bedca}
+% These are useful if E and D have to remain constant
+\csdef{qorder@setD@1}{abcde}
+\csdef{qorder@setD@2}{bacde}
+\csdef{qorder@setD@3}{cbade}
+\csdef{qorder@setD@4}{acbde}
+% These are useful if E has to remain constant
+\csdef{qorder@setE@1}{abcde}
+\csdef{qorder@setE@2}{dabce}
+\csdef{qorder@setE@3}{cdabe}
+\csdef{qorder@setE@4}{bcdae}
 \define@key{exam@multichoice}{order}{\csedef{qorder}{#1}}
 \define@key{exam@multichoice}{set}{\csdef{qorder}{\csuse{qorder@set#1@\exam@examversion}}}
 \define@key{exam@multichoice}{v1}{\IfStrEq{\exam@examversion}{1}{\def\qorder{#1}}{}}
@@ -228,6 +244,7 @@
 \NewDocumentEnvironment{multichoice}{O{set=A}}{% Start commands
   \def\qorder{abcde}
   \setkeys{exam@multichoice}{#1}%
+  \ifthenelse{\boolean{exam@internaltest}}{\fbox{\qorder}}{}
   \csedef{mcqorder}{\qorder}
   \Collect@Body\bracketme
 }{% end commands

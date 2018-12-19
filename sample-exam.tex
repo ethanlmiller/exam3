@@ -1,4 +1,4 @@
-\documentclass[11pt,nochoiceboxes,solutions]{exam3}
+\documentclass[11pt,nochoiceboxes,solutions,internaltesting]{exam3}
 
 \usepackage{graphicx,xspace}
 \usepackage{xcolor,multicol,wrapfig}
@@ -43,9 +43,9 @@
   \end{list}
 }
 
-%\typein[\myexam]{Exam version: }
-%\setexamversion{\myexam}
-\setexamversion{3}
+\typein[\myexam]{Exam version (1,2,3,4): }
+\setexamversion{\myexam}
+%\setexamversion{3}
 
 \copyrightname{Ethan L. Miller}
 
@@ -54,7 +54,7 @@
 \begin{document}
 
 \examversionnames{VERSION A,VERSION B,VERSION C,VERSION D}
-\title{CMPE 110 Final Exam---\fbox{\textbf{\examversionname}}}
+\title{CSE 100 Final Exam---\fbox{\textbf{\examversionname}}}
 \date{December 10, 2018}
 \maketitle
 
@@ -63,21 +63,11 @@
 
 \section*{Multiple Choice I}
 
+% The correct answer must have a * in front of it.  It's acceptable to have more than one *
+% on a single question.
 \begin{problem}{2}
   How much wood would a woodchuck chuck if a woodchuck could chuck wood?
-  \begin{exammc}[acbed]
-    \item *About $10^2$ cords
-    \item About $10^3$ cords
-    \item About $10^4$ cords
-    \item About $10^5$ cords
-    \item None of the above
-  \end{exammc}
-\end{problem}
-
-% Week 5
-\begin{problem}{2}
-  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
-  \begin{multichoice}[set=A]
+  \begin{multichoice}
     \item *About $10^2$ cords
     \item About $10^3$ cords
     \item About $10^4$ cords
@@ -86,28 +76,53 @@
   \end{multichoice}
 \end{problem}
 
+%
+% Specifying order=.... results in the choices being in the same order on all versions.
+%
 \begin{problem}{2}
-  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+  What is the airspeed velocity of an unladen swallow?
   \begin{multichoice}[order=badce]
-    \item A
-    \item B
-    \item C
-    \item D
-    \item E
+    \item 50\,kph
+    \item 70\,kph
+    \item 20\,kph
+    \item 30\,kph
+    \item *What do you mean, an African or European swallow?
   \end{multichoice}
 \end{problem}
 
+%
+% Specifying set= picks a particular set of orderings.  Ordering E ensures that choice E
+% is always last, and ordering D ensures that choices D and E are always last, in that
+% order.
+%
+\begin{problem}{2}
+  What is the meaning of life, the universe, and everything?
+  \begin{multichoice}[set=E]
+    \item Infinity
+    \item *42
+    \item Heaven
+    \item A towel
+    \item None of the above
+  \end{multichoice}
+\end{problem}
+
+%
+% One can also specify all of the orderings explicitly for each version.
+%
 \begin{problem}{2}
   How much wood would a woodchuck chuck if a woodchuck could chuck wood?
   \begin{multichoice}[v1=abcde,v2=edcba,v3=abedc,v4=cdeba]
-    \item A
+    \item *A
     \item B
     \item C
     \item D
-    \item E
   \end{multichoice}
 \end{problem}
 
+% The command \examshowanswers produces a comma-separated list of multiple choice answers,
+% in the order in which they were encountered in the file.  This list ignores problem
+% numbers.  Non-multiple choice problems are skipped in the list; there are no "empty"
+% slots for them.
 \typeout{====> Answers: \examshowanswers}
 
 \showpoints
