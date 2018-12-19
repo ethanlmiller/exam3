@@ -163,9 +163,7 @@
 \newcommand{\exam@amark}{\ifthenelse{\boolean{exam@solutions}}{\makebox[0pt][l]{\hspace*{2pt}\textbf{\ifthenelse{\boolean{exam@choiceboxes}}{$\textsf{x}$}{$\Longrightarrow$}}}}{}}
 \newcommand{\exam@cbox}{\makebox[\exam@cboxwidth][l]{\ifthenelse{\boolean{exam@choiceboxes}}{$\bigcirc$~}{}}}
 
-\newcommand{\exam@addanswer}[1]{%
-  \IfStrEq{\exam@mcanswers}{}{\global\csedef{exam@mcanswers}{#1}}{\global\csedef{exam@mcanswers}{\exam@mcanswers,#1}}%
-}
+\newcommand{\exam@addanswer}[1]{\global\csedef{exam@mcanswers}{\exam@mcanswers #1}}
 
 \let\olditem\item
 \newcounter{exam@mc}
@@ -245,6 +243,7 @@
   \def\qorder{abcde}
   \setkeys{exam@multichoice}{#1}%
   \ifthenelse{\boolean{exam@internaltest}}{\fbox{\qorder}}{}
+  \IfStrEq{\exam@mcanswers}{}{}{\global\csedef{exam@mcanswers}{\csuse{exam@mcanswers},}}
   \csedef{mcqorder}{\qorder}
   \Collect@Body\bracketme
 }{% end commands
