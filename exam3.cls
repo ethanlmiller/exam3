@@ -20,8 +20,8 @@
 \RequirePackage{etex}
 \RequirePackage{setspace}
 \RequirePackage{fancyhdr}
-\RequirePackage{environ,xparse,etoolbox}
-
+\RequirePackage{environ,xparse,etoolbox,etextools}
+\RequirePackage{listofitems}
 
 \newboolean{exam@solutions}
 \setboolean{exam@solutions}{false}
@@ -102,6 +102,8 @@
 \newcommand{\exam@examversion}{1}
 \newcommand{\setexamversion}[1]{\renewcommand{\exam@examversion}{#1}}
 \newcommand{\examversion}{\exam@examversion}
+\newcommand{\examversionnames}[1]{\setsepchar{,}\greadlist\exam@versionnames{#1}}
+\newcommand{\examversionname}{\exam@versionnames[\exam@examversion]}
 \newcommand{\copyrightname}[1]{\renewcommand{\exam@copyright}{\copyright~Copyright \the\year~#1}}
 \newcommand{\nocopyrightname}{\renewcommand{\exam@copyright}{}}
 \newcommand{\instructorname}[1]{\renewcommand{\exam@instrname}{#1}}
@@ -113,6 +115,8 @@
 \newcommand{\examsection}[1]{\centerline{\fbox{\Large\textbf{#1}}} \vspace{0.15in}}
 \newcommand{\examshowanswers}{\exam@mcanswers}
 \def\exam@mcanswers{}
+
+\examversionnames{A,B,C,D}
 
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
@@ -156,27 +160,8 @@
 \newcommand{\exam@amark}{\ifthenelse{\boolean{exam@solutions}}{\makebox[0pt][l]{\hspace*{2pt}\textbf{\ifthenelse{\boolean{exam@choiceboxes}}{$\textsf{x}$}{$\Longrightarrow$}}}}{}}
 \newcommand{\exam@cbox}{\makebox[\exam@cboxwidth][l]{\ifthenelse{\boolean{exam@choiceboxes}}{$\bigcirc$~}{}}}
 
-\newcounter{orderenum}\newcounter{listcount}[orderenum]%\newcounter{listtotal}[orderenum]
-\let\olditem\item% Store regular \item macro
-\NewEnviron{orderenum}[1][\relax]{%
-  \stepcounter{orderenum}% New orderenum environment (also resets listcount)
-  \def\optarg{#1}% Store optional argument
-  \expandafter\ifx\optarg\relax% A normal list
-    \begin{mchoice}\BODY\end{mchoice}% Process environment
-  \else% A reordered list
-    \g@addto@macro{\BODY}{\item\relax\item}% Used to delimit the items; last item identified by \item\relax\item
-    \def\item##1\item{% Redefine \item to capture contents
-      \def\optarg{##1}%\show\optarg%
-      \expandafter\ifx\optarg\relax\else% Last item not reached
-        \stepcounter{listcount}% Next item being processed
-        \csgdef{orderenum@\theorderenum @\thelistcount}{##1}% Store item in control sequence
-        \expandafter\item% Recursively continue processing items
-      \fi
-    }
-    \BODY% Process environment (save items)
-    \renewcommand*{\do}[1]{\olditem \csname orderenum@\theorderenum @##1\endcsname}% Print each item in order
-    \enumerate\docsvlist{#1}\endenumerate% Process items
-  \fi%
+\newcommand{\exam@addanswer}[1]{%
+  \IfStrEq{\exam@mcanswers}{}{\global\csedef{exam@mcanswers}{#1}}{\global\csedef{exam@mcanswers}{\exam@mcanswers,#1}}%
 }
 
 \newcounter{exam@mc}
@@ -188,6 +173,7 @@
 \NewEnviron{exammc}[1][\relax]{%
   %\setkeys{exam@mckeys}{qorder={a,b,c,d,e},#1}
   \stepcounter{exam@mc}% New orderenum environment (also resets listcount)
+  \csedef{qo}{#1}
   \def\optarg{#1}% Store optional argument
   \expandafter% A reordered list
   \g@addto@macro{\BODY}{\item\relax\item}% Used to delimit the items; last item identified by \item\relax\item
@@ -201,14 +187,16 @@
   }
   \BODY% Process environment (save items)
   \renewcommand*{\do}[1]{\def\exam@cur{\csname exam@\theexam@mc @##1\endcsname}\IfBeginWith{\exam@cur}{*}%
-    {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\global\csedef{exam@mcanswers}{\exam@mcanswers,\Alph{exam@muc}}}%
+    {\def\exam@curmark{\exam@amark}\olditem \StrBehind{\exam@cur}{*}\exam@addanswer{\Alph{exam@muc}}}%
     {\def\exam@curmark{}\olditem \exam@cur}%
   }
-  \begin{exam@muc}\docsvlist{\exam@qorder}\end{exam@muc}% Process items
+  \begin{exam@muc}
+    \toksloop[\do]{\qo}
+  \end{exam@muc}
 }
 
 \newcounter{exam@muc}
-\NewDocumentEnvironment{exam@muc}{}{
+\newenvironment{exam@muc}{
   \def\exam@curmark{}% Set solution mark to be empty.  Set to exam@amark if correct answer.
   \begin{list}
     {\exam@curmark\exam@cbox\Alph{exam@muc}.\hfill}
@@ -225,6 +213,26 @@
 }{
   \end{list}
 }
+
+\csdef{qorder@setA@1}{abcde}
+\csdef{qorder@setA@2}{dabec}
+\csdef{qorder@setA@3}{cdeab}
+\csdef{qorder@setA@4}{bedca}
+\define@key{exam@multichoice}{order}{\csedef{qorder}{#1}}
+\define@key{exam@multichoice}{set}{\csdef{qorder}{\csuse{qorder@set#1@\exam@examversion}}}
+\define@key{exam@multichoice}{v1}{\IfStrEq{\exam@examversion}{1}{\def\qorder{#1}}{}}
+\define@key{exam@multichoice}{v2}{\IfStrEq{\exam@examversion}{2}{\def\qorder{#1}}{}}
+\define@key{exam@multichoice}{v3}{\IfStrEq{\exam@examversion}{3}{\def\qorder{#1}}{}}
+\define@key{exam@multichoice}{v4}{\IfStrEq{\exam@examversion}{4}{\def\qorder{#1}}{}}
+\long\def\bracketme#1{\begin{exammc}[\mcqorder]#1\end{exammc}}
+\NewDocumentEnvironment{multichoice}{O{set=A}}{% Start commands
+  \def\qorder{abcde}
+  \setkeys{exam@multichoice}{#1}%
+  \csedef{mcqorder}{\qorder}
+  \Collect@Body\bracketme
+}{% end commands
+}
+
 
 %=================================
 

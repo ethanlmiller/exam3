@@ -45,7 +45,7 @@
 
 %\typein[\myexam]{Exam version: }
 %\setexamversion{\myexam}
-\setexamversion{B}
+\setexamversion{3}
 
 \copyrightname{Ethan L. Miller}
 
@@ -53,7 +53,8 @@
 
 \begin{document}
 
-\title{CMPE 110 Final Exam---\fbox{\textbf{VERSION \examversion}}}
+\examversionnames{VERSION A,VERSION B,VERSION C,VERSION D}
+\title{CMPE 110 Final Exam---\fbox{\textbf{\examversionname}}}
 \date{December 10, 2018}
 \maketitle
 
@@ -62,11 +63,9 @@
 
 \section*{Multiple Choice I}
 
-
-% Week 5
 \begin{problem}{2}
   How much wood would a woodchuck chuck if a woodchuck could chuck wood?
-  \begin{exammc}
+  \begin{exammc}[acbed]
     \item *About $10^2$ cords
     \item About $10^3$ cords
     \item About $10^4$ cords
@@ -75,9 +74,41 @@
   \end{exammc}
 \end{problem}
 
+% Week 5
+\begin{problem}{2}
+  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+  \begin{multichoice}[set=A]
+    \item *About $10^2$ cords
+    \item About $10^3$ cords
+    \item About $10^4$ cords
+    \item About $10^5$ cords
+    \item None of the above
+  \end{multichoice}
+\end{problem}
 
+\begin{problem}{2}
+  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+  \begin{multichoice}[order=badce]
+    \item A
+    \item B
+    \item C
+    \item D
+    \item E
+  \end{multichoice}
+\end{problem}
 
-\typeout{Answers: \examshowanswers}
+\begin{problem}{2}
+  How much wood would a woodchuck chuck if a woodchuck could chuck wood?
+  \begin{multichoice}[v1=abcde,v2=edcba,v3=abedc,v4=cdeba]
+    \item A
+    \item B
+    \item C
+    \item D
+    \item E
+  \end{multichoice}
+\end{problem}
+
+\typeout{====> Answers: \examshowanswers}
 
 \showpoints
 
