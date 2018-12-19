@@ -13,10 +13,7 @@
 \RequirePackage{pagecounting}
 \RequirePackage{lastpage}
 \RequirePackage[absolute]{textpos}
-\RequirePackage{forarray}
-\RequirePackage{forloop}
-\RequirePackage{xkeyval}
-\RequirePackage{xstring}
+\RequirePackage{xkeyval,xstring}
 \RequirePackage{etex}
 \RequirePackage{setspace}
 \RequirePackage{fancyhdr}
