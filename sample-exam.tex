@@ -77,9 +77,16 @@
   \end{multichoice}
 \end{problem}
 
+\begin{multicols*}{2}
+\raggedcolumns
+
+% If you change column width, don't forget to update problem width as well!
+\problemwidth{\columnwidth}
+
 %
 % Specifying order=.... results in the choices being in the same order on all versions.
 %
+
 \begin{problem}{2}
   What is the airspeed velocity of an unladen swallow?
   \begin{multichoice}[order=badce]
@@ -120,6 +127,7 @@
   \end{multichoice}
 \end{problem}
 
+\end{multicols*}
 % The command \examshowanswers produces a comma-separated list of multiple choice answers,
 % in the order in which they were encountered in the file.  This list ignores problem
 % numbers.  Non-multiple choice problems are skipped in the list; there are no "empty"
